@@ -2,7 +2,7 @@ import asyncio
 from contextlib import contextmanager
 import logging
 import threading
-from typing import Any, Dict, Optional, Generator
+from typing import Any, Dict, Generator, Coroutine
 
 import boto3
 
@@ -12,7 +12,7 @@ from mrlazy_bot.local_poller.command_runner import (
     run_allowed_command_async,
 )
 from mrlazy_bot.local_poller.slack_client import SlackMessenger
-from mrlazy_bot.models import SqsJob, CommandExecutionResult, CommandExecutionError
+from mrlazy_bot.models import SqsJob, CommandExecutionError
 
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,6 @@ class SqsWorker:
                     QueueUrl=self._queue_url,
                     MaxNumberOfMessages=1,
                     WaitTimeSeconds=settings.SQS_LONG_POLL_SECS,
-                    VisibilityTimeout=settings.COMMAND_TIMEOUT_SECS,
                 )
                 messages = resp.get("Messages") or []
                 for msg in messages:

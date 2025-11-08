@@ -1,13 +1,12 @@
 import asyncio
 import logging
-import threading
 from typing import Any, Dict
 
-from mrlazy_bot.logging_config import configure_json_logging
 from mrlazy_bot.local_poller.allowlist import CommandAllowlist
 from mrlazy_bot.local_poller.sqs_worker import SqsWorker
 from mrlazy_bot.local_poller.slack_client import SlackMessenger
 from mrlazy_bot import settings
+
 
 logger = logging.getLogger(__name__)
 

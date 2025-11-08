@@ -1,10 +1,8 @@
 import logging
-from typing import Optional
 
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-from mrlazy_bot.logging_config import configure_json_logging
 from mrlazy_bot import settings
 from mrlazy_bot.models import SqsJob
 
@@ -21,7 +19,7 @@ class SlackMessenger:
         channel: str,
         thread_ts: str,
         text: str,
-    ) -> Optional[str]:
+    ) -> str | None:
         if len(text) > settings.OUTPUT_MAX_CHARS:
             text = text[:settings.OUTPUT_MAX_CHARS] + "..."
 
@@ -32,7 +30,7 @@ class SlackMessenger:
             logger.error("Failed to post Slack message", extra={"error": str(e)})
             return None
 
-    def post_job_update(self, job: SqsJob, text: str) -> Optional[str]:
+    def post_job_update(self, job: SqsJob, text: str) -> str | None:
         if len(text) > settings.OUTPUT_MAX_CHARS:
             text = text[:settings.OUTPUT_MAX_CHARS] + "..."
 

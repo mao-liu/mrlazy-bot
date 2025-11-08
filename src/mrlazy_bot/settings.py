@@ -1,38 +1,24 @@
 import os
-from typing import Optional
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [%(name)s] [%(levelname)s] [%(thread)d:%(threadName)s] %(message)s %(extra)s'
+)
+
+def get_env(name: str) -> str | None:
+    return os.environ.get(name)
 
 
-def get_env(name: str, default: Optional[str] = None) -> Optional[str]:
-    value = os.environ.get(name)
-    if value is None or value == "":
-        return default
-    return value
-
-
-def get_int(name: str, default: int) -> int:
-    val = get_env(name)
-    if val is None:
-        return default
+def get_int_env(name: str, default: int) -> int:
     try:
-        return int(val)
+        return int(get_env(name))
     except ValueError:
         return default
 
 
-def get_bool(name: str, default: bool) -> bool:
-    val = get_env(name)
-    if val is None:
-        return default
-    lowered = val.lower()
-    if lowered in ("1", "true", "t", "yes", "y", "on"):
-        return True
-    if lowered in ("0", "false", "f", "no", "n", "off"):
-        return False
-    return default
-
-
 # Common
-AWS_REGION = get_env("AWS_REGION", "us-east-1")
+AWS_REGION = get_env("AWS_REGION")
 SQS_QUEUE_URL = get_env("SQS_QUEUE_URL")
 
 # Lambda only
@@ -40,9 +26,8 @@ SLACK_SIGNING_SECRET = get_env("SLACK_SIGNING_SECRET")
 
 # Local poller only
 SLACK_BOT_TOKEN = get_env("SLACK_BOT_TOKEN")
-COMMANDS_ALLOWLIST_PATH = get_env("COMMANDS_ALLOWLIST_PATH", "./config/commands.example.yaml")
-COMMAND_TIMEOUT_SECS = get_int("COMMAND_TIMEOUT_SECS", 1800)
-OUTPUT_MAX_CHARS = get_int("OUTPUT_MAX_CHARS", 3000)
-MAX_CONCURRENT_COMMANDS = get_int("MAX_CONCURRENT_COMMANDS", 4)
-SQS_LONG_POLL_SECS = get_int("SQS_LONG_POLL_SECS", 20)
+COMMANDS_ALLOWLIST_PATH = get_env("COMMANDS_ALLOWLIST_PATH")
+OUTPUT_MAX_CHARS = get_int_env("OUTPUT_MAX_CHARS", 3000)
+MAX_CONCURRENT_COMMANDS = get_int_env("MAX_CONCURRENT_COMMANDS", 4)
+SQS_LONG_POLL_SECS = get_int_env("SQS_LONG_POLL_SECS", 20)
 
