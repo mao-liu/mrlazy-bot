@@ -1,4 +1,3 @@
-import main
+from mrlazy_bot.local_poller import main
 
-if __name__ == "__main__":
-    main.main()
+main.main()
