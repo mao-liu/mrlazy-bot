@@ -1,32 +1,39 @@
-import subprocess
+import asyncio
+import logging
 from typing import List, Optional, Tuple
 
 from mrlazy_bot.local_poller.allowlist import AllowedCommand
+from mrlazy_bot.models import CommandExecutionResult, CommandExecutionError
 
 
-class CommandExecutionError(Exception):
-    pass
+logger = logging.getLogger(__name__)
 
-
-def run_allowed_command(
+async def run_allowed_command_async(
     allowed: AllowedCommand,
     runtime_args: List[str],
-    default_timeout: int,
 ) -> Tuple[int, str, str]:
+    """
+    Async variant using asyncio subprocess APIs so command execution does not block the event loop.
+    """
     argv = [allowed.exec] + list(allowed.fixed_args or []) + list(runtime_args or [])
-    timeout = allowed.timeout or default_timeout
+    timeout = allowed.timeout
+    process = await asyncio.create_subprocess_exec(
+        *argv,
+        cwd=allowed.working_dir or None,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+
     try:
-        proc = subprocess.run(
-            argv,
-            cwd=allowed.working_dir or None,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            check=False,
-        )
-        return proc.returncode, proc.stdout or "", proc.stderr or ""
-    except subprocess.TimeoutExpired as e:
-        raise CommandExecutionError(f"Timeout after {timeout}s") from e
-    except FileNotFoundError as e:
-        raise CommandExecutionError(f"Executable not found: {allowed.exec}") from e
+        stdout_b, stderr_b = await asyncio.wait_for(process.communicate(), timeout=timeout)
+    except asyncio.TimeoutError as e:
+        logger.error(f"Command '{allowed.exec}' timed out after {timeout}s")
+        process.kill()
+        await process.communicate()
+        raise e
+
+    result = CommandExecutionResult(exit_code=process.returncode, stdout=stdout_b, stderr=stderr_b)
+    result.raise_for_status()
+
+    return result
 
