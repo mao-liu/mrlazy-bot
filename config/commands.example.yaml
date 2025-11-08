@@ -1,0 +1,7 @@
+commands:
+  date:
+    exec: date
+    fixed_args: []
+    working_dir: ""
+    timeout: 30
+
