@@ -60,3 +60,38 @@ You know the drill:
 - Running a media server on the cloud is expensive/hard/expensive-and-hard
 - I happen to have spare computer(s) running at home
 - I'm using it to do things on a crypto miner
+ 
+## Getting started (application code)
+
+Install dependencies:
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Configure environment (copy `env.example` and edit values):
+
+```bash
+cp env.example .env && source .env
+```
+
+Configure allowed commands:
+
+```bash
+cp config/commands.example.yaml config/commands.yaml
+# Edit COMMANDS_ALLOWLIST_PATH to point to config/commands.yaml if you want
+```
+
+Run the local poller:
+
+```bash
+python -m mrlazy_bot.local_poller.main
+# or
+python bin/run_poller.py
+```
+
+Lambda handler entrypoint:
+
+- Use `mrlazy_bot.lambda_app.handler::handler` as the Lambda handler.
+- Requires `SLACK_SIGNING_SECRET`, `SQS_QUEUE_URL`, and `AWS_REGION`.
